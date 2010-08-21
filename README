@@ -63,7 +63,7 @@ fetchPersonObject.php?id=15,16:
 
 Like any other good XML file declaration, this is wrapped within a root tag, person_list. (If you are lazy and don't wrap
 your XML object definitions within a root tag, you can use initUsingWrapper:NO, but its not recommended.) As you can tell,
-each Person object has a name, age, and gender. Jenny's object representation, though, contains a Òfavorites" object that
+each Person object has a name, age, and gender. Jenny's object representation, though, contains a "favorites" object that
 stores food and game.
 
 When the NSObjectFetcher finishes parsing the XML file, the NSArray fetchArray contains both objects encoded as
@@ -89,7 +89,7 @@ object. So, rewrite the above code to read:
 -(void)arrayFromFetcher:(NSArray *)fetchArray{
 	for (int x = 0; x < [fetchArray count]; x++)
 	{
-		Person *person = [[Person alloc] initWithDictionary:[fetchArray 				objectAtIndex:x];
+		Person *person = [[Person alloc] initWithDictionary:[fetchArray objectAtIndex:x];
 		// Do whatever you want with the Person object
 	}
 }
