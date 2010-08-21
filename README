@@ -4,10 +4,20 @@ NSObjectFetcher Documentation
 This class is designed to standardize and streamline object initialization via an XML server request.
 
 --A Brief Story--
-I stumbled across this problem when I was trying to figure out a way to initialize an Objective C object using XML data from a remote server. In order to accomplish such a feat using the methods available in the base iPhone SDK, one needs to create an NSURLConnection object that retrieves the appropriate data from a server. Then, in the connectionDidFinishLoading: delegate method, one must create an NSXMLParser object to parse the XML data. In the delegate methods attached to this object, one must create custom code that associates a returned property in the XML tree with the matching object property. This seems like a lot of work just to initialize an object in your application with server data. If you were responsible for fetching one or two object definitions, this wouldn't be that big of a deal. You'd just customize the code each time for those objects. You run into problems when you wish to retrieve object data for many different object types. Re-creating the same code over and over for what is essentially the same operation is tedious and detracts from actual problem solving.
+I stumbled across this problem when I was trying to figure out a way to initialize an Objective C object using XML data from
+a remote server. In order to accomplish such a feat using the methods available in the base iPhone SDK, one needs to create
+an NSURLConnection object that retrieves the appropriate data from a server. Then, in the connectionDidFinishLoading:
+delegate method, one must create an NSXMLParser object to parse the XML data. In the delegate methods attached to this
+object, one must create custom code that associates a returned property in the XML tree with the matching object property.
+This seems like a lot of work just to initialize an object in your application with server data. If you were responsible for
+fetching one or two object definitions, this wouldn't be that big of a deal. You'd just customize the code each time for
+those objects. You run into problems when you wish to retrieve object data for many different object types. Re-creating the
+same code over and over for what is essentially the same operation is tedious and detracts from actual problem solving.
 
 --Example of Use--
-To help those of you facing this issue, I have created a calls, NSObjectParser, that can do all of the above for multiple object definitions, including objects that contain other objects, and adds little to no extra runtime to the operation. Here's an example of how you would use the class:
+To help those of you facing this issue, I have created a calls, NSObjectParser, that can do all of the above for multiple
+object definitions, including objects that contain other objects, and adds little to no extra runtime to the operation.
+Here's an example of how you would use the class:
 
 NSObjectFetcher *fetcher = [[NSObjectFetcher alloc] init];
 [fetcher fetchObjectsWithURLAsString:@"http://www.mywebsite.com/fetchPersonObject.php" usingData:@"id=15,16"];
@@ -15,7 +25,7 @@ NSObjectFetcher *fetcher = [[NSObjectFetcher alloc] init];
 -(void)arrayFromFetcher:(NSArray *)fetchArray{
 	for (int x = 0; x < [fetchArray count]; x++)
 	{
-		Person *person = [[Person alloc] initWithDictionary:[fetchArray 				objectAtIndex:x];
+		Person *person = [[Person alloc] initWithDictionary:[fetchArray objectAtIndex:x];
 		// Do whatever you want with the Person object
 	}
 }
@@ -23,10 +33,13 @@ NSObjectFetcher *fetcher = [[NSObjectFetcher alloc] init];
 	NSLog(@"Error in retrieving object data.");
 }
 
-That's it. The class takes your URL along with any data that you wish to append and returns a NSArray containing all of your objects encoded as NSMutableDictinoary objects. Then, you create a function within your object, initWithDictionary:, that assigns the values within the dictionary to their matching Objective C object properties.
+That's it. The class takes your URL along with any data that you wish to append and returns a NSArray containing all of your
+objects encoded as NSMutableDictinoary objects. Then, you create a function within your object, initWithDictionary:, that
+assigns the values within the dictionary to their matching Objective C object properties.
 
 --A Full Use Case--
-Not quite making sense yet? Let's go through the code above starting with the PHP file responsible for querying People objects:
+Not quite making sense yet? Let's go through the code above starting with the PHP file responsible for querying People
+objects:
 
 fetchPersonObject.php?id=15,16:
 
@@ -48,12 +61,17 @@ fetchPersonObject.php?id=15,16:
 </person_list>
 
 
-Like any other good XML file declaration, this is wrapped within a root tag, person_list. (If you are lazy and don't wrap your XML object definitions within a root tag, you can use initUsingWrapper:NO, but its not recommended.) As you can tell, each Person object has a name, age, and gender. Jenny's object representation, though, contains a Òfavorites" object that stores food and game.
+Like any other good XML file declaration, this is wrapped within a root tag, person_list. (If you are lazy and don't wrap
+your XML object definitions within a root tag, you can use initUsingWrapper:NO, but its not recommended.) As you can tell,
+each Person object has a name, age, and gender. Jenny's object representation, though, contains a Òfavorites" object that
+stores food and game.
 
-When the NSObjectFetcher finishes parsing the XML file, the NSArray fetchArray contains both objects encoded as NSMutableDictionaries. Stanley occupies position 0 in the array and Jenny occupies position 1. Below is an example of how you would access some of the properties:
+When the NSObjectFetcher finishes parsing the XML file, the NSArray fetchArray contains both objects encoded as
+NSMutableDictionaries. Stanley occupies position 0 in the array and Jenny occupies position 1. Below is an example of how you
+would access some of the properties:
 
 -(void)arrayFromFetcher:(NSArray *)fetchArray{
-	[[fetchArray objectAtIndex:0] objectForKey:@"id"];		//Returns 15
+	[[fetchArray objectAtIndex:0] objectForKey:@"id"];	//Returns 15
 	[[fetchArray objectAtIndex:0] objectForKey:@"name"];	//Returns Stanley
 	[[fetchArray objectAtIndex:0] objectForKey:@"age"];	//Returns 32
 	[[fetchArray objectAtIndex:0] objectForKey:@"gender"];	//Returns m
@@ -64,7 +82,9 @@ When the NSObjectFetcher finishes parsing the XML file, the NSArray fetchArray c
 	[[[fetchArray objectAtIndex:1] objectForKey@"favorites"] objectForKey@"game"];	//Returns Tic-Tac-Toe
 }
 
-Pretty simple. Each NSMutableDictionary can access the same properties of different object representations using the same key. However, this data is not that useful to you in a NSMutableDictionary, so you need to port it over to your person object. So, rewrite the above code to read:
+Pretty simple. Each NSMutableDictionary can access the same properties of different object representations using the same
+key. However, this data is not that useful to you in a NSMutableDictionary, so you need to port it over to your person
+object. So, rewrite the above code to read:
 
 -(void)arrayFromFetcher:(NSArray *)fetchArray{
 	for (int x = 0; x < [fetchArray count]; x++)
@@ -74,7 +94,9 @@ Pretty simple. Each NSMutableDictionary can access the same properties of differ
 	}
 }
 
-This will initialize two Person objects using the data in each NSMutableDictionary, but in order for it to work, you need to create the method initWithDictionary: for your Person object. Here's how one would do that if each person has an id, name, gender, and optional favorites object:
+This will initialize two Person objects using the data in each NSMutableDictionary, but in order for it to work, you need to
+create the method initWithDictionary: for your Person object. Here's how one would do that if each person has an id, name,
+gender, and optional favorites object:
 
 Person.m
 -(void)initWithDictionary:(NSMutableDictionary *)initDict
@@ -95,7 +117,9 @@ Favorites.m
 	[self setGame:[initDict objectForKey:@"game"]];
 }
 
-Naturally, you could continue with the layering of NSMutableDictionaries for multiple object-within-object declarations for as long as you want provided that you keep a standard function initWithDictionary: for initializing your custom object using an NSMutableDictionary object.
+Naturally, you could continue with the layering of NSMutableDictionaries for multiple object-within-object declarations for
+as long as you want provided that you keep a standard function initWithDictionary: for initializing your custom object using
+an NSMutableDictionary object.
 
 --Final Thoughts--
 Things to keep in mind when you are using NSObjectFetcher:
@@ -105,7 +129,8 @@ Things to keep in mind when you are using NSObjectFetcher:
 3. You can fetch objects a few ways:
 
 fetchObjectsWithURLAsString:usingData:
-- This function takes an NSString object for the URL and an NSString object for any information you wish to send the server for additional processing. 
+- This function takes an NSString object for the URL and an NSString object for any information you wish to send the server
+for additional processing. 
 
 fetchObjectsWithURL:usingData:
 - This function takes an NSURL and an NSString for the additional information on the script.
@@ -114,7 +139,11 @@ Both functions use POST requests in the connection.
 
 If you wish to create your own custom NSURLConnection, use fetchObjectsUsingConnection: to fetch your object.
 
-3. If you do not wrap your XML file in a root wrapper, I created the method initUsingWrapper: that takes a BOOL. Calling [fetcher initUsingWrapper:YES] is the same as calling [fetcher init]. What's different is when you call [fetcher initUsingWrapper:NO]. This method tells the NSObjectFetcher not to look out for a root wrapper. If you don't have a root wrapper and don't call this function, the NSObjectFetcher will not return the expected NSMutableDictionary definitions for your object.
+3. If you do not wrap your XML file in a root wrapper, I created the method initUsingWrapper: that takes a BOOL. Callin
+[fetcher initUsingWrapper:YES] is the same as calling [fetcher init]. What's different is when you call [fetcher
+initUsingWrapper:NO]. This method tells the NSObjectFetcher not to look out for a root wrapper. If you don't have a root
+wrapper and don't call this function, the NSObjectFetcher will not return the expected NSMutableDictionary definitions for
+your object.
 
 
 The post, along with other useful tutorials can be found at www.deepinthecouch.com
